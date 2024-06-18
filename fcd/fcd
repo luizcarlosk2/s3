@@ -1,3 +1,54 @@
 #!/bin/bash
 
+################################################################################
+# Script Name: fcd (Fast cd)
+# Description: 
+#              Manage your favorite paths and switch to them quickly in your 
+#              daily tasks, improving your efficiency.
+# Author: Luiz Carlos Franzé
+# Creation Date: 2024-06-18
+# Usage: ./fcd.sh <path-name>
+# Example: 
+#   First insert the Path Name and the path in fcdpaths.cfg file:
+#   $  echo "p-alpha ~/projects/personal/project-alpha" >> ~/.fcdpaths.cfg
+#   Run to change to the path:
+#   $ ./fcd.sh p-alpha
+# 
+# This script was inpired by qcd script from Daniel J. Barrett: 
+# Efficient Linux at the Command Line by Daniel J. Barrett (O’Reilly).
+# Copyright 2022 Daniel Barrett, 978-1-098-11340-7.
+################################################################################
+
+# Check if arg is present
+if [ $# -ne 1 ]; then
+  echo "Use: $0 <path-name>"
+  exit 1
+fi
+
+# Path name
+path_name=$1
+
+# Declare dict
+declare -A paths
+
+# Sohrtcut Filepath with path names:
+fcdpath="$HOME/.fcdpaths.cfg"
+
+# Reeaf the file
+while IFS= read -r line; do
+  # Use only the first space to split name-path and paths.
+  pathname="${line%% *}"
+  path="${line#* }"
+  paths["$pathname"]="$path"
+done < "$fcdpath"
+
+# Check if name path existis in dict.
+if [ -n "${paths[$path_name]}" ]; then
+  # cd to the path selected
+  cd "${paths[$path_name]}" || { echo "fcd: Error on changed to the path: ${paths[$path_name]}"; exit 1; }
+  echo "Path changed: ${paths[$path_name]}"
+else
+  echo "fcd: Name Path '$path_name' not found in fcdpath file"
+  exit 1
+fi
 
